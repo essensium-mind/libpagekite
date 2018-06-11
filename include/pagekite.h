@@ -533,6 +533,22 @@ DECLSPEC_DLL int pagekite_set_openssl_ciphers(
 );
 
 
+/* Initialization: Add a name that will be accepted in the frontend certificate
+ *
+ *    Add a name that will be accepted in the frontend's certificate when
+ *    connecting with TLS. If only a single name is configured, this name
+ *    will also be used for SNI (if PK_WITH_FRONTEND_SNI is set).
+ *
+ *    This function can be called at any time.
+ *
+ * Returns: Always returns 0.
+ */
+DECLSPEC_DLL int pagekite_add_ssl_cert_name(
+  pagekite_mgr,    /* A reference to the PageKite manager object */
+  char* hostname   /* The name that will be accepted in the frontend certificate */
+);
+
+
 /* Initialization: Connect to multiple front-end relays.
  *
  *    If non-zero, this setting will configure how many spare relays to

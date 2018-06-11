@@ -50,7 +50,8 @@ void usage(int ecode) {
                   "\t-a x\tSet app name to x for logging\n"
                   "\t-s\tLog to syslog instead of to stderr\n");                  
 #ifdef HAVE_OPENSSL
-  fprintf(stderr, "\t-I\tConnect insecurely, without SSL.\n");
+  fprintf(stderr, "\t-I\tConnect insecurely, without SSL.\n"
+                  "\t-h x\tUse x (a DNS name) as the SNI name for the frontend connection\n");
 #endif
   fprintf(stderr, "\t-S\tStatic setup, disable FE failover and DDNS updates\n"
                   "\t-w D\tWhite-label configuration using domain D.\n"
@@ -113,6 +114,7 @@ int main(int argc, char **argv) {
   int max_conns = 25;
   int spare_frontends = 0;
   char* fe_hostname = NULL;
+  char* fe_ssl_name = NULL;
   int fe_port = 443;
   char* ddns_url = PAGEKITE_NET_DDNS;
   int ac;
@@ -127,7 +129,7 @@ int main(int argc, char **argv) {
   flags |= PK_WITH_IPV6;
 #endif
 
-  while (-1 != (ac = getopt(argc, argv, "46a:B:c:CE:F:P:HIl:Nn:qr:RsSvWw:Z"))) {
+  while (-1 != (ac = getopt(argc, argv, "46a:B:c:CE:F:P:HIh:l:Nn:qr:RsSvWw:Z"))) {
     switch (ac) {
       case '4':
         flags &= ~PK_WITH_IPV4;
@@ -158,6 +160,11 @@ int main(int argc, char **argv) {
         break;
       case 'I':
         flags &= ~PK_WITH_SSL;
+        break;
+      case 'h':
+        gotargs++;
+        fe_hostname = strdup(optarg);
+        flags |= PK_WITH_FRONTEND_SNI;
         break;
       case 'r':
         gotargs++;
@@ -261,6 +268,7 @@ int main(int argc, char **argv) {
   pagekite_set_bail_on_errors(m, bail_on_errors);
   pagekite_set_conn_eviction_idle_s(m, conn_eviction_idle_s);
   if (rejection_url != NULL) pagekite_set_rejection_url(m, rejection_url);
+  if (fe_ssl_name != NULL) pagekite_add_ssl_cert_name(m, fe_ssl_name);
 
   /* Move the logging to the event API, mostly for testing. */
   if ((verbosity < 4) && (0 == (flags & PK_WITH_SYSLOG))) {

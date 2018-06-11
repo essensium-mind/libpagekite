@@ -451,6 +451,14 @@ int pagekite_set_openssl_ciphers(pagekite_mgr pkm, const char* ciphers)
   return 0;
 }
 
+int pagekite_add_ssl_cert_name(pagekite_mgr pkm, char* hostname)
+{
+  char *cert_names[2] = {hostname, NULL};
+  (void) pkm;
+  pks_add_ssl_cert_names(cert_names);
+  return 0;
+}
+
 int pagekite_want_spare_frontends(pagekite_mgr pkm, int spares)
 {
   if (pkm == NULL) return -1;
